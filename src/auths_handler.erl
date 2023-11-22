@@ -10,8 +10,9 @@ init(Req, _Opts) ->
 	method_check(Method, HasBody, Req).
 
 method_check(<<"POST">>, true, Req) ->
-	{ok, PostVals, _Req} = cowboy_req:read_urlencoded_body(Req),
-	[{Body, true}] = PostVals,
+	%{ok, PostVals, _Req} = cowboy_req:read_urlencoded_body(Req),
+	%[{Body, true}] = PostVals,
+	{ok, Body, _Req} = cowboy_req:read_body(Req),
 	Map = jsone:decode(Body, [{object_format, map}]),
 	Action = maps:get(<<"action">>, Map),
 	action({Action, Map}, Req);
