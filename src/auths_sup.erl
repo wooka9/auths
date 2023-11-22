@@ -11,7 +11,7 @@ start_link() ->
 init([]) ->
 	Procs = [
 		#{
-			id => auths_server,
+			id => auths,
 			start => {auths, start_link, []},
 			type => worker,
 			shutdown => brutal_kill}

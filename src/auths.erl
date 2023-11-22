@@ -8,6 +8,8 @@
 
 -define(SERVER, ?MODULE).
 
+%% -record(state, {db_users, db_sessions}).
+
 %% -import(auths_db, [create/1, useradd/2, login/3, logout/2]).
 
 %% API
@@ -26,23 +28,26 @@ logout(Username, Session) ->
 
 %% init
 init([]) ->
-	_Result = auths_db:create(?MODULE),
+	%DB_users = list_to_atom(atom_to_list(?MODULE) ++ "_users"),
+	%DB_sessions = list_to_atom(atom_to_list(?MODULE) ++ "_sessions"),
+	%auths_db:create({DB_users, DB_sessions}),
+	auths_db:create({auths_users, auth_sessions}),
 	%erlang:send_after(60000, self(), {cleanup}),
 	%{reply, Result, State};
 	{ok, []}.
 
 %% handle
 handle_call({useradd, Username, Password}, _From, State) ->
-	Result = auths_db:useradd(?MODULE, Username, Password),
+	Result = auths_db:useradd({auths_users, auth_sessions}, Username, Password),
 	{reply, Result, State};
 handle_call({login, Username, Password}, _From,  State) ->
-	Result = auths_db:login(?MODULE, Username, Password, 60),
+	Result = auths_db:login({auths_users, auth_sessions}, Username, Password, 60),
 	{reply, Result, State};
 handle_call({logout, Username, Session}, _From, State) ->
-	Result = auths_db:logout(?MODULE, Username, Session),
+	Result = auths_db:logout({auths_users, auth_sessions}, Username, Session),
 	{reply, Result, State};
 handle_call(_, _From, State) ->
-	{reply, wrong_message, State}.
+	{reply, {error, "wrong message"}, State}.
 
 handle_cast(_Msg, State) ->
 	{noreply, State}.

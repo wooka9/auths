@@ -1,33 +1,53 @@
 -module(auths_db).
--export([create/1, useradd/3, login/4, logout/3]).
+-export([create/1, useradd/3, login/4, logout/3, cleanup/1]).
 
-create(DB) ->
-	ets:new(DB, [named_table, public]),
+create(DBs) ->
+	{DB_users, DB_sessions} = DBs,
+	% case ets:whereis(DB)
+	ets:new(DB_users, [named_table, public]),
+	ets:new(DB_sessions, [named_table, public]),
 	ok.
 
-useradd(DB, Username, Password) ->
-	ets:insert(DB, {Username, Password}),
-	ok.
-
-login(DB, Username, Password, Expire) ->
-	case ets:lookup(DB, Username) of
-		[{Username, Password}] ->
-			TimeNow = erlang:system_time(seconds),
-			SessionNew = erlang:phash2({node(), erlang:system_time()}),
-			ets:insert(DB, {Username, SessionNew, TimeNow + Expire}),
-			{ok, SessionNew};
+useradd(DBs, Username, Password) ->
+	{DB_users, _DB_sessions} = DBs,
+	case ets:lookup(DB_users, Username) of
+		[{Username, _Password}] ->
+			{error, "username already exists"};
 		_ ->
-			{error, "Incorrect Username or Password"}
+			case is_integer(Password) of
+				false ->
+					ets:insert(DB_users, {Username, Password}),
+					{ok, "username added"};
+				true ->
+					{error, "password format invalid"}
+			end
 	end.
 
-logout(DB, UsernameOut, SessionOut) ->
-	MatchSpec = ets:fun2ms(fun({Username, Session, _ExpireTime}) when Username == UsernameOut, Session == SessionOut -> true end),
-	ets:select_delete(DB, MatchSpec),
-	ok.
+login(DBs, Username, Password, ExpireIn) ->
+	{DB_users, DB_sessions} = DBs,
+	case ets:lookup(DB_users, Username) of
+		[{Username, Password}] ->
+			TimeNow = erlang:system_time(seconds),
+			Session = erlang:phash2({node(), erlang:system_time()}),
+			ets:insert(DB_sessions, {Session, Username, TimeNow + ExpireIn}),
+			{ok, "session added", #{<<"session">> => Session}};
+		_ ->
+			{error, "username or password are incorrect"}
+	end.
 
-%delete_obsolete(TableName) ->
-%	TimeNow = erlang:system_time(seconds),
-%	MatchSpec = ets:fun2ms(fun({_, _, ExpireTime}) when ExpireTime < TimeNow -> true end),
-%	ets:select_delete(TableName, MatchSpec),
-%	ok.
+logout(DBs, Username, Session) ->
+	{_DB_users, DB_sessions} = DBs,
+	case ets:lookup(DB_sessions, Session) of
+		[{Session, Username, _ExpireTime}] ->
+			ets:delete(DB_sessions, Session),
+			{ok, "sessions closed"};
+		_ ->
+			{error, "session does not exists"}
+	end.
 
+cleanup(DBs) ->
+	{_DB_users, DB_sessions} = DBs,
+	TimeNow = erlang:system_time(seconds),
+	MatchSpec = ets:fun2ms(fun({_Session, _Username, ExpireTime}) when ExpireTime >= TimeNow -> true end),
+	ets:select_delete(DB_sessions, MatchSpec),
+	{ok, "cleanup"}.
