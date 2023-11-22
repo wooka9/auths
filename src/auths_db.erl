@@ -1,5 +1,5 @@
 -module(auths_db).
--export([create/1, useradd/3, login/4, logout/3, cleanup/1]).
+-export([create/1, useradd/3, login/4, logout/3, ping/3, cleanup/1]).
 
 create(DBs) ->
 	{DB_users, DB_sessions} = DBs,
@@ -45,9 +45,18 @@ logout(DBs, Username, Session) ->
 			{error, "session does not exists"}
 	end.
 
+ping(DBs, Username, Session) ->
+	{_DB_users, DB_sessions} = DBs,
+	case ets:lookup(DB_sessions, Session) of
+		[{Session, Username, _ExpireTime}] ->
+			{ok, "pong"};
+		_ ->
+			{error, "session does not exists"}
+	end.
+
 cleanup(DBs) ->
 	{_DB_users, DB_sessions} = DBs,
 	TimeNow = erlang:system_time(seconds),
-	MatchSpec = ets:fun2ms(fun({_Session, _Username, ExpireTime}) when ExpireTime >= TimeNow -> true end),
+	MatchSpec = ets:fun2ms(fun({_, _, ExpireTime}) when ExpireTime < TimeNow -> true end),
 	ets:select_delete(DB_sessions, MatchSpec),
-	{ok, "cleanup"}.
+	{ok, "cleanup seccessful"}.
