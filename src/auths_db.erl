@@ -14,12 +14,12 @@ useradd(DBs, Username, Password) ->
 		[{Username, _Password}] ->
 			{error, "username already exists"};
 		_ ->
-			case is_integer(Password) of
+			case is_integer(Username) or is_integer(Password) of
 				false ->
 					ets:insert(DB_users, {Username, Password}),
-					{ok, "username added"};
+					{ok, "username and password added"};
 				true ->
-					{error, "password format invalid"}
+					{error, "username or password format invalid"}
 			end
 	end.
 
