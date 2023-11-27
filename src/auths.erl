@@ -6,8 +6,12 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 -export([useradd/2, login/2, logout/2, ping/2]).
 
+-define(CHILD(I, Type), {I, {I, start_link, []}, permanent, 5000, Type, [I]}).
+
 -define(SERVER, ?MODULE).
-%% -record(dbs, {db_users, db_sessions}).
+%-record(state, {
+%	database	:: 
+%, db_sessions}).
 
 %% API
 start_link() ->
@@ -28,10 +32,17 @@ ping(Username, Session) ->
 
 %% init
 init([]) ->
+%	{ok, PGC} = epgsql:connect(#{
+%		host => "localhost",
+%		username => "auths",
+%		password => "auths",
+%		database => "auths",
+%		timeout => 4000
+%	}),
 	DB_users = list_to_atom(atom_to_list(?MODULE) ++ "_users"),
 	DB_sessions = list_to_atom(atom_to_list(?MODULE) ++ "_sessions"),
 	DBs={DB_users, DB_sessions},
-	auths_db:create(DBs),
+	auths_db:init(DBs),
 	erlang:send_after(1000, self(), cleanup),
 	{ok, DBs}.
 

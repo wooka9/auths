@@ -9,13 +9,18 @@ start_link() ->
 	supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init([]) ->
-	Procs = [
+%	SupFlags = #{
+%		strategy => one_for_one,
+%		intensity => 1000,
+%		period => 1
+%	},
+	SupFlags = {one_for_one, 5, 10},
+	%Auths = ?CHILD(auths, worker),
+	Workers = [
 		#{
 			id => auths,
 			start => {auths, start_link, []},
 			type => worker,
 			shutdown => brutal_kill}
 		],
-		%%{auth, {auth, start_link, []},
-		%%permanent, 5000, worker, [auth]}],
-	{ok, {{one_for_one, 5, 10}, Procs}}.
+	{ok, {SupFlags, Workers}}.
