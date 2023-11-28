@@ -17,8 +17,8 @@ init([]) ->
 	%Auths = ?CHILD(auths, worker),
 	Workers = [
 		#{
-			id => auths,
-			start => {auths, start_link, []},
+			id => auths_worker,
+			start => {auths_worker, start_link, []},
 			type => worker,
 			shutdown => brutal_kill}
 		],

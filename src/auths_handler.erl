@@ -22,22 +22,22 @@ method_check(_, _, Req) ->
 action({<<"useradd">>, Map}, Req) ->
 	Username = maps:get(<<"username">>, Map),
 	Password = maps:get(<<"password">>, Map),
-	Result = auths:useradd(Username, Password),
+	Result = auths_worker:useradd(Username, Password),
 	answer(Result, Req);
 action({<<"login">>, Map}, Req) ->
 	Username = maps:get(<<"username">>, Map),
 	Password = maps:get(<<"password">>, Map),
-	Result = auths:login(Username, Password),
+	Result = auths_worker:login(Username, Password),
 	answer(Result, Req);
 action({<<"logout">>, Map}, Req) ->
 	Username = maps:get(<<"username">>, Map),
 	Session = maps:get(<<"session">>, Map),
-	Result = auths:logout(Username, Session),
+	Result = auths_worker:logout(Username, Session),
 	answer(Result, Req);
 action({<<"ping">>, Map}, Req) ->
 	Username = maps:get(<<"username">>, Map),
 	Session = maps:get(<<"session">>, Map),
-	Result = auths:ping(Username, Session),
+	Result = auths_worker:ping(Username, Session),
 	answer(Result, Req);
 action({_, _Map}, Req) ->
 	Result = {error, <<"not implemented yet">>},
