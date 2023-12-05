@@ -1,0 +1,4 @@
+-define(WEB_URL_DEF, "/api/auths").
+-define(WEB_PORT_DEF, 8080).
+-define(POOL_NAME_DEF, auths).
+-define(POOL_SIZE_DEF, 10).
