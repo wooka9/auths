@@ -1,1 +1,1 @@
-# auths
+# auths cowboy+epgsql+poolboy
