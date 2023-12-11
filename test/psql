@@ -1,0 +1,14 @@
+CREATE TABLE users (
+    username VARCHAR ( 64 ) UNIQUE NOT NULL PRIMARY KEY,
+    password VARCHAR ( 64 ) NOT NULL
+);
+
+CREATE TABLE sessions (
+    username VARCHAR ( 64 ) NOT NULL,
+    session VARCHAR ( 64 ) UNIQUE NOT NULL PRIMARY KEY,
+    expireat TIMESTAMP NOT NULL
+);
+
+psql -h localhost -U auths -d auths -c "insert into users (username, password) values ('u2', 'p2')"
+
+curl -H "Content-Type: application/json" -X POST -d '{"action":"useradd","username":"user1","password":"password1"}' http://localhost:8080/api/auths

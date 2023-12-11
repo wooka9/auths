@@ -16,10 +16,8 @@ method_check(<<"POST">>, true, Req) ->
     Map = jsone:decode(Body, [{object_format, map}]),
     Action = maps:get(<<"action">>, Map, none),
     case is_binary(Action) andalso Action =/= <<"">> of
-            true ->
-                action({Action, Map}, Req);
-            false ->
-                action({none, Map}, Req)
+            true -> action({Action, Map}, Req);
+            false -> action({none, Map}, Req)
     end;
 method_check(_, _, Req) ->
     Headers = #{<<"content-type">> => <<"text/plain">>},
@@ -29,29 +27,27 @@ method_check(_, _, Req) ->
 action({<<"useradd">>, Map}, Req) ->
     Username = maps:get(<<"username">>, Map),
     Password = maps:get(<<"password">>, Map),
-    answer({useradd, [Username, Password]}, Req);
+    answer({useradd, Username, Password}, Req);
 action({<<"login">>, Map}, Req) ->
     Username = maps:get(<<"username">>, Map),
     Password = maps:get(<<"password">>, Map),
-    answer({login, [Username, Password]}, Req);
+    answer({login, Username, Password}, Req);
 action({<<"logout">>, Map}, Req) ->
     Username = maps:get(<<"username">>, Map),
     Session = maps:get(<<"session">>, Map),
-    answer({logout, [Username, Session]}, Req);
+    answer({logout, Username, Session}, Req);
 action({<<"ping">>, Map}, Req) ->
     Username = maps:get(<<"username">>, Map),
     Session = maps:get(<<"session">>, Map),
     answer({ping, [Username, Session]}, Req);
-action({<<"close">>, _Map}, Req) ->
-    answer({close, [0,1]}, Req);
 action({_, _Map}, Req) ->
-    Result = {error, "not implemented"},
+    Result = {error, "not implemented yet"},
     answer_http(Result, Req).
 
-answer({Action, Args}, Req) ->
+answer({Action, Arg1, Arg2}, Req) ->
     {ok, ConfigPool} = application:get_env(auths, pool),
     PoolName = proplists:get_value(name, ConfigPool, ?POOL_NAME_DEF),
-    Fun = fun(Worker) -> gen_server:call(Worker, {Action, Args}, ?CALL_TIMEOUT_DEF) end,
+    Fun = fun(Worker) -> gen_server:call(Worker, {Action, Arg1, Arg2}, ?CALL_TIMEOUT_DEF) end,
     Result = poolboy:transaction(PoolName, Fun),
     answer_http(Result, Req).
 
