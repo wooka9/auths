@@ -62,8 +62,5 @@ close(Connection, _Args) ->
     ok = epgsql:close(Connection),
     {ok, "connection to db closed"}.
 
-cleanup(_DB) ->
-    %TimeNow = erlang:system_time(seconds),
-    %MatchSpec = ets:fun2ms(fun({_, _, ExpireTime}) when ExpireTime < TimeNow -> true end),
-    %ets:select_delete(DB_sessions, MatchSpec),
+cleanup(_Connection) ->
     {ok, "cleanup seccessful"}.

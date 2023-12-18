@@ -11,12 +11,13 @@ start(_Type, _Args) ->
     {ok, ConfigWeb} = application:get_env(auths, web),
     Port = proplists:get_value(port, ConfigWeb, ?WEB_PORT_DEF),
     %Url = proplists:get_value(port, ConfigWeb, ?WEB_URL_DEF),
-    Dispatch = cowboy_router:compile([
+    Routes = [
         {'_', [
-            %{Url, auths_handler, []}
-            {"/api/auths", auths_handler, []}
+            {"/auths/api",      auths_handler, []},
+            {"/[...]",          auths_handler, []}
         ]}
-    ]),
+    ],
+    Dispatch = cowboy_router:compile(Routes),
     {ok, _} = cowboy:start_clear(http, [{port, Port}], #{
         env => #{dispatch => Dispatch}
     }),

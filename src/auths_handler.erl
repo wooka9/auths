@@ -61,13 +61,13 @@ answer_http(Result, Req) ->
     cowboy_req:reply(200, Headers, [Body, <<"\n">>], Req).
 
 result_to_map(Result) ->
-	case Result of
-		{ok, Message} ->
-			#{<<"status">> => <<"ok">>, <<"message">> => list_to_binary(Message)};
-		{ok, Message, #{<<"session">> := Session}} ->
-			#{<<"status">> => <<"ok">>, <<"message">> => list_to_binary(Message), <<"session">> => Session};
-		{error, Message} ->
-			#{<<"status">> => <<"error">>, <<"message">> => list_to_binary(Message)};
-		{_} ->
-			#{<<"status">> => <<"abnormal">>}
-	end.
+    case Result of
+        {ok, Message} ->
+            #{<<"status">> => <<"ok">>, <<"message">> => list_to_binary(Message)};
+        {ok, Message, #{<<"session">> := Session}} ->
+            #{<<"status">> => <<"ok">>, <<"message">> => list_to_binary(Message), <<"session">> => Session};
+        {error, Message} ->
+            #{<<"status">> => <<"error">>, <<"message">> => list_to_binary(Message)};
+        {_} ->
+            #{<<"status">> => <<"abnormal">>}
+    end.
